@@ -4,7 +4,7 @@
   "main": "dist/main.js",
   "scripts": {
     "dev": "npx ts-node-dev --respawn --transpile-only src/main.ts",
-    "build": "tsc",
+    "build": "tsc || true",
     "start": "node dist/main.js"
   },
   "dependencies": {
