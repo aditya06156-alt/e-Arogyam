@@ -1,4 +1,4 @@
-import { Notification } from '@pharma/types';
+import { Notification } from './types';
 import { v4 as uuidv4 } from 'uuid';
 import { inMemoryStore } from './db';
 import dotenv from 'dotenv';

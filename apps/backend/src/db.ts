@@ -1,5 +1,5 @@
 import { Pool } from 'pg';
-import { Facility, Medicine, Batch, InventoryTransaction, TelemetryReading, VirtualDevice, Alert, Notification, User } from '@pharma/types';
+import { Facility, Medicine, Batch, InventoryTransaction, TelemetryReading, VirtualDevice, Alert, Notification, User } from './types';
 import { v4 as uuidv4 } from 'uuid';
 import dotenv from 'dotenv';
 import path from 'path';

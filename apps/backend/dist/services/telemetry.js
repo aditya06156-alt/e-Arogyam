@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.processTelemetryIngest = processTelemetryIngest;
-const utils_1 = require("@pharma/utils");
+const utils_1 = require("../utils");
 const uuid_1 = require("uuid");
 const db_1 = require("../db");
 const realtime_1 = require("../realtime");

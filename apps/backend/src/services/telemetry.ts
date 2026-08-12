@@ -1,5 +1,5 @@
-import { TelemetryReading, Alert, Batch } from '@pharma/types';
-import { isTemperatureInBreach } from '@pharma/utils';
+import { TelemetryReading, Alert, Batch } from '../types';
+import { isTemperatureInBreach } from '../utils';
 import { v4 as uuidv4 } from 'uuid';
 import { inMemoryStore, pool } from '../db';
 import { broadcastWsEvent } from '../realtime';

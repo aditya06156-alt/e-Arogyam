@@ -1,6 +1,6 @@
 import { Server as HttpServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
-import { WsEventMap } from '@pharma/types';
+import { WsEventMap } from './types';
 
 let io: SocketIOServer | null = null;
 let sequenceCounter = 0;

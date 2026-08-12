@@ -6,7 +6,7 @@ const db_1 = require("../db");
 const telemetry_1 = require("../services/telemetry");
 const sms_1 = require("../sms");
 const realtime_1 = require("../realtime");
-const utils_1 = require("@pharma/utils");
+const utils_1 = require("../utils");
 const uuid_1 = require("uuid");
 exports.apiRouter = (0, express_1.Router)();
 // Standard API response wrappers

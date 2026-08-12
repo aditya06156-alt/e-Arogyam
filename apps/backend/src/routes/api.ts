@@ -3,8 +3,8 @@ import { inMemoryStore, pool } from '../db';
 import { processTelemetryIngest } from '../services/telemetry';
 import { sendSmsNotification } from '../sms';
 import { broadcastWsEvent } from '../realtime';
-import { calculateDaysToExpiry } from '@pharma/utils';
-import { InventoryTransaction, Batch } from '@pharma/types';
+import { calculateDaysToExpiry } from '../utils';
+import { InventoryTransaction, Batch } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 
 export const apiRouter = Router();

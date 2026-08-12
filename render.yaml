@@ -1,0 +1,34 @@
+services:
+  # -----------------------------------------------------------------------
+  # BACKEND — Node.js Express API + Socket.io Realtime Gateway
+  # -----------------------------------------------------------------------
+  - type: web
+    name: e-arogyam-backend
+    runtime: node
+    rootDir: apps/backend
+    buildCommand: npm install && npm run build
+    startCommand: node dist/main.js
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: FAST2SMS
+        sync: false
+      - key: MANAGER_PHONE
+        sync: false
+      - key: PORT
+        value: 3001
+
+  # -----------------------------------------------------------------------
+  # FRONTEND — Next.js 14 Web Application
+  # -----------------------------------------------------------------------
+  - type: web
+    name: e-arogyam-web
+    runtime: node
+    rootDir: apps/web
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    plan: free
+    envVars:
+      - key: NEXT_PUBLIC_API_BASE
+        sync: false
