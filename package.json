@@ -7,11 +7,14 @@
     "packages/*"
   ],
   "scripts": {
-    "dev:backend": "npm --prefix apps/backend run dev",
-    "dev:web": "npm --prefix apps/web run dev",
+    "build": "npm run build:types && npm run build:utils && npm run build:backend && npm run build:web",
     "build:types": "npm --prefix packages/types run build",
     "build:utils": "npm --prefix packages/utils run build",
     "build:backend": "npm --prefix apps/backend run build",
-    "build:web": "npm --prefix apps/web run build"
+    "build:web": "npm --prefix apps/web run build",
+    "dev:backend": "npm --prefix apps/backend run dev",
+    "dev:web": "npm --prefix apps/web run dev",
+    "start:backend": "node apps/backend/dist/main.js",
+    "start:web": "npm --prefix apps/web run start"
   }
 }

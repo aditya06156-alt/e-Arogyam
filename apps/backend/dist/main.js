@@ -23,12 +23,12 @@ const server = http_1.default.createServer(app);
 (0, realtime_1.initRealtimeGateway)(server);
 // Initialize Neon DB schema if connected
 (0, db_1.initDbSchema)();
-server.listen(PORT, () => {
+server.listen(Number(PORT), '0.0.0.0', () => {
     console.log(`
 ===========================================================
   🏥 PHARMACEUTICAL COLD-CHAIN BACKEND RUNNING
-  📡 HTTP Server:      http://localhost:${PORT}/api/v1
-  ⚡ WebSocket Path:   ws://localhost:${PORT}/realtime/v1
+  📡 HTTP Server:      http://0.0.0.0:${PORT}/api/v1
+  ⚡ WebSocket Path:   ws://0.0.0.0:${PORT}/realtime/v1
   🐘 Neon Database:    ${process.env.DATABASE_URL ? 'CONNECTED' : 'IN_MEMORY_MODE'}
 ===========================================================
   `);
