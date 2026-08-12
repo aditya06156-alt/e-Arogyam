@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-govt-gray text-govt-text font-sans antialiased;
+  }
+}
+
+/* Official Government Table Styling */
+.govt-table {
+  @apply w-full text-left border-collapse border border-govt-border bg-white text-sm;
+}
+.govt-table th {
+  @apply bg-slate-100 text-govt-navy font-bold p-3 border border-govt-border uppercase text-xs tracking-wider;
+}
+.govt-table td {
+  @apply p-3 border border-govt-border text-slate-800;
+}
+.govt-table tr:nth-child(even) {
+  @apply bg-slate-50;
+}
+.govt-table tr:hover {
+  @apply bg-blue-50/50;
+}

@@ -1,0 +1,17 @@
+{
+  "name": "pharma-coldchain-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:backend": "npm --prefix apps/backend run dev",
+    "dev:web": "npm --prefix apps/web run dev",
+    "build:types": "npm --prefix packages/types run build",
+    "build:utils": "npm --prefix packages/utils run build",
+    "build:backend": "npm --prefix apps/backend run build",
+    "build:web": "npm --prefix apps/web run build"
+  }
+}
