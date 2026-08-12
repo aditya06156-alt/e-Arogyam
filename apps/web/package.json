@@ -3,16 +3,14 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "npx -p next next dev -p 3000",
-    "build": "npx -p next next build",
-    "start": "npx -p next next start -p 3000"
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "start": "next start -p ${PORT:-3000}"
   },
   "dependencies": {
-    "@pharma/types": "*",
-    "@pharma/utils": "*",
     "html5-qrcode": "^2.3.8",
     "lucide-react": "^0.344.0",
-    "next": "^14.1.0",
+    "next": "^14.2.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "recharts": "^2.12.2",

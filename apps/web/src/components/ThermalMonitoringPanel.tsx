@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Thermometer, ShieldAlert, CheckCircle2 } from 'lucide-react';
-import { TelemetryReading, Batch } from '@pharma/types';
+import { TelemetryReading, Batch } from '@/lib/types';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 
 interface ThermalMonitoringPanelProps {

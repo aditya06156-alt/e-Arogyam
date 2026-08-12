@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Cpu, Zap, RotateCcw, AlertOctagon, CheckCircle2, Play, Square, Activity, Send } from 'lucide-react';
-import { VirtualDevice, Batch, Facility } from '@pharma/types';
+import { VirtualDevice, Batch, Facility } from '@/lib/types';
 
 interface SimulatorControlPanelProps {
   apiBase: string;

@@ -25,7 +25,7 @@ const AuthContext = createContext<AuthContextType>({
   logout: () => {}
 });
 
-const API_BASE = 'http://localhost:3001/api/v1';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001/api/v1';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserSession | null>(null);

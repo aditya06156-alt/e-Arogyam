@@ -11,12 +11,12 @@ import { ThermalMonitoringPanel } from '@/components/ThermalMonitoringPanel';
 import { LogisticsScanner } from '@/components/LogisticsScanner';
 import { SimulatorControlPanel } from '@/components/SimulatorControlPanel';
 import { BatchTraceModal } from '@/components/BatchTraceModal';
-import { DashboardOverview, Batch, Facility, TelemetryReading } from '@pharma/types';
+import { DashboardOverview, Batch, Facility, TelemetryReading } from '@/lib/types';
 import { Search, Filter, Building2, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 
-const API_BASE = 'http://localhost:3001/api/v1';
-const WS_URL = 'http://localhost:3001';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001/api/v1';
+const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:3001';
 
 export default function AdminDashboardPage() {
   const router = useRouter();

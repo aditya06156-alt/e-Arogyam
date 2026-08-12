@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Package, AlertTriangle, AlertOctagon, Clock, ShieldAlert } from 'lucide-react';
-import { DashboardOverview } from '@pharma/types';
+import { DashboardOverview } from '@/lib/types';
 
 interface KPICardsProps {
   overview: DashboardOverview;

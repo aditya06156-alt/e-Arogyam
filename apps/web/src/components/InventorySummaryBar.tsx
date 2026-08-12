@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Package, AlertOctagon, ShieldAlert, Clock, Layers } from 'lucide-react';
-import { Batch } from '@pharma/types';
+import { Batch } from '@/lib/types';
 
 interface InventorySummaryBarProps {
   batches: Batch[];

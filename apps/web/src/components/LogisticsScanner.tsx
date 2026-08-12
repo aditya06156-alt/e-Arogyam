@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Camera, QrCode, ArrowDownRight, ArrowUpRight, Wifi, WifiOff, RefreshCw, CheckCircle2, AlertCircle, Package, X, Video } from 'lucide-react';
-import { parseGS1Barcode } from '@pharma/utils';
-import { Batch, Facility } from '@pharma/types';
+import { parseGS1Barcode } from '@/lib/utils';
+import { Batch, Facility } from '@/lib/types';
 
 interface LogisticsScannerProps {
   apiBase: string;
