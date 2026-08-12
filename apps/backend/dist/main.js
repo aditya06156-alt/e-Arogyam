@@ -16,6 +16,20 @@ const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3001;
 app.use((0, cors_1.default)({ origin: '*' }));
 app.use(express_1.default.json());
+// Root status & Health Check
+app.get('/', (req, res) => {
+    res.json({
+        status: 'online',
+        service: 'e-Arogyam Pharmaceutical Cold-Chain API Backend',
+        version: '1.0.0',
+        endpoints: {
+            health: '/api/v1/health',
+            facilities: '/api/v1/facilities',
+            inventory: '/api/v1/inventory/overview',
+            wsGateway: '/realtime/v1'
+        }
+    });
+});
 // API Gateway routes
 app.use('/api/v1', api_1.apiRouter);
 const server = http_1.default.createServer(app);
