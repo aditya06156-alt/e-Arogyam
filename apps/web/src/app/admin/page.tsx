@@ -12,6 +12,7 @@ import { LogisticsScanner } from '@/components/LogisticsScanner';
 import { SimulatorControlPanel } from '@/components/SimulatorControlPanel';
 import { BatchTraceModal } from '@/components/BatchTraceModal';
 import { DashboardOverview, Batch, Facility, TelemetryReading } from '@/lib/types';
+import { calculateDaysToExpiry } from '@/lib/utils';
 import { Search, Filter, Building2, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 
@@ -93,10 +94,24 @@ export default function AdminDashboardPage() {
     };
   }, []);
 
+  const handleKpiCardClick = (filterType: string) => {
+    setActiveTab('inventory');
+    setStatusFilter(filterType);
+  };
+
   const filteredBatches = batches.filter(b => {
     const matchesSearch = b.batchNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           b.medicine?.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'ALL' || b.status === statusFilter;
+    const days = calculateDaysToExpiry(b.expiryDate);
+    let matchesStatus = true;
+    if (statusFilter === 'ALL') matchesStatus = true;
+    else if (statusFilter === 'LOW_STOCK') matchesStatus = b.status === 'LOW_STOCK' || b.quantity < 100;
+    else if (statusFilter === 'SPOILED') matchesStatus = b.status === 'SPOILED';
+    else if (statusFilter === 'EXPIRED') matchesStatus = b.status === 'EXPIRED';
+    else if (statusFilter === 'EXPIRING_60' || statusFilter === 'EXPIRING_30') matchesStatus = days <= 60 && days > 0;
+    else if (statusFilter === 'EXPIRING_90') matchesStatus = days <= 90 && days > 60;
+    else if (statusFilter === 'EXPIRING_120') matchesStatus = days <= 120 && days > 90;
+    else matchesStatus = b.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
@@ -118,7 +133,7 @@ export default function AdminDashboardPage() {
       />
 
       <main className="max-w-7xl mx-auto px-4 md:px-6 pt-6">
-        <KPICards overview={overview} />
+        <KPICards overview={overview} onCardClick={handleKpiCardClick} />
 
         {/* Tab 1: System Overview */}
         {activeTab === 'overview' && (
@@ -190,7 +205,7 @@ export default function AdminDashboardPage() {
           <div className="bg-white border border-govt-border rounded-govt p-4 shadow-sm">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-3 mb-3 border-b border-slate-200 gap-3">
               <h3 className="font-bold text-govt-navy uppercase text-xs tracking-wider">
-                Gorakhpur District Master Inventory Directory
+                Gorakhpur District Master Inventory Directory ({filteredBatches.length} of {batches.length})
               </h3>
 
               <div className="flex gap-2 w-full sm:w-auto">
@@ -212,7 +227,9 @@ export default function AdminDashboardPage() {
                 >
                   <option value="ALL">All Statuses</option>
                   <option value="AVAILABLE">Available</option>
-                  <option value="EXPIRING_30">Expiring ≤30d</option>
+                  <option value="EXPIRING_60">Expiring ≤60d</option>
+                  <option value="EXPIRING_90">Expiring 61–90d</option>
+                  <option value="EXPIRING_120">Expiring 91–120d</option>
                   <option value="LOW_STOCK">Low Stock</option>
                   <option value="SPOILED">Spoiled/Breached</option>
                   <option value="EXPIRED">Expired</option>

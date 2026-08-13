@@ -12,6 +12,7 @@ import { LogisticsScanner } from '@/components/LogisticsScanner';
 import { SimulatorControlPanel } from '@/components/SimulatorControlPanel';
 import { BatchTraceModal } from '@/components/BatchTraceModal';
 import { DashboardOverview, Batch, Facility, TelemetryReading } from '@/lib/types';
+import { calculateDaysToExpiry } from '@/lib/utils';
 import { Search, Building2, ArrowLeft, ShieldAlert, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -104,21 +105,45 @@ export default function HospitalDashboardPage() {
   const totalStock = hospitalBatches.reduce((acc, b) => acc + b.quantity, 0);
   const activeBreaches = hospitalBatches.filter(b => b.status === 'SPOILED').length;
   const criticalStockouts = hospitalBatches.filter(b => b.quantity < 100).length;
-  const expiring30Days = hospitalBatches.filter(b => b.status === 'EXPIRING_30').length;
+
+  let expiring60Days = 0;
+  let expiring90Days = 0;
+  let expiring120Days = 0;
+
+  hospitalBatches.forEach(b => {
+    const days = calculateDaysToExpiry(b.expiryDate);
+    if (days <= 60 && days > 0) expiring60Days++;
+    else if (days <= 90 && days > 60) expiring90Days++;
+    else if (days <= 120 && days > 90) expiring120Days++;
+  });
 
   const hospitalOverview: DashboardOverview = {
     totalInventory: totalStock,
     criticalStockouts,
-    expiring30Days,
-    expiring60Days: 0,
-    expiring90Days: 0,
+    expiring60Days,
+    expiring90Days,
+    expiring120Days,
     activeBreaches
+  };
+
+  const handleKpiCardClick = (filterType: string) => {
+    setActiveTab('inventory');
+    setStatusFilter(filterType);
   };
 
   const filteredBatches = hospitalBatches.filter(b => {
     const matchesSearch = b.batchNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           b.medicine?.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'ALL' || b.status === statusFilter;
+    const days = calculateDaysToExpiry(b.expiryDate);
+    let matchesStatus = true;
+    if (statusFilter === 'ALL') matchesStatus = true;
+    else if (statusFilter === 'LOW_STOCK') matchesStatus = b.status === 'LOW_STOCK' || b.quantity < 100;
+    else if (statusFilter === 'SPOILED') matchesStatus = b.status === 'SPOILED';
+    else if (statusFilter === 'EXPIRED') matchesStatus = b.status === 'EXPIRED';
+    else if (statusFilter === 'EXPIRING_60' || statusFilter === 'EXPIRING_30') matchesStatus = days <= 60 && days > 0;
+    else if (statusFilter === 'EXPIRING_90') matchesStatus = days <= 90 && days > 60;
+    else if (statusFilter === 'EXPIRING_120') matchesStatus = days <= 120 && days > 90;
+    else matchesStatus = b.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
@@ -170,7 +195,7 @@ export default function HospitalDashboardPage() {
           </div>
         </div>
 
-        <KPICards overview={hospitalOverview} />
+        <KPICards overview={hospitalOverview} onCardClick={handleKpiCardClick} />
 
         {/* Tab 1: System Overview */}
         {activeTab === 'overview' && (
@@ -183,9 +208,10 @@ export default function HospitalDashboardPage() {
         {/* Tab 2: Facility Inventory Table */}
         {activeTab === 'inventory' && (
           <div className="bg-white border border-govt-border rounded-govt p-4 shadow-sm">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-3 mb-3 border-b border-slate-200 gap-3">
-              <h3 className="font-bold text-govt-navy uppercase text-xs tracking-wider">
-                {facility?.name} — Current Batches Inventory
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 pb-3 border-b border-slate-200">
+              <h3 className="font-bold text-govt-navy uppercase text-xs tracking-wider flex items-center gap-2">
+                <Building2 className="w-4 h-4 text-blue-600" />
+                Facility Medicine Batches ({filteredBatches.length} of {hospitalBatches.length})
               </h3>
 
               <div className="flex gap-2 w-full sm:w-auto">
@@ -207,7 +233,9 @@ export default function HospitalDashboardPage() {
                 >
                   <option value="ALL">All Statuses</option>
                   <option value="AVAILABLE">Available</option>
-                  <option value="EXPIRING_30">Expiring ≤30d</option>
+                  <option value="EXPIRING_60">Expiring ≤60d</option>
+                  <option value="EXPIRING_90">Expiring 61–90d</option>
+                  <option value="EXPIRING_120">Expiring 91–120d</option>
                   <option value="LOW_STOCK">Low Stock</option>
                   <option value="SPOILED">Spoiled/Breached</option>
                   <option value="EXPIRED">Expired</option>

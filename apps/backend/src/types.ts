@@ -43,6 +43,7 @@ export interface Medicine {
 export type BatchStatus =
   | 'AVAILABLE'
   | 'LOW_STOCK'
+  | 'EXPIRING_120'
   | 'EXPIRING_90'
   | 'EXPIRING_60'
   | 'EXPIRING_30'
@@ -137,9 +138,10 @@ export interface Notification {
 export interface DashboardOverview {
   totalInventory: number;
   criticalStockouts: number;
-  expiring30Days: number;
+  expiring30Days?: number;
   expiring60Days: number;
   expiring90Days: number;
+  expiring120Days?: number;
   activeBreaches: number;
   spoiledBatches?: number;
   expiredBatches?: number;

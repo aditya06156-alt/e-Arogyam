@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { AuthProvider } from '@/components/AuthProvider';
+import { PreferencesProvider } from '@/lib/PreferencesContext';
 
 export const metadata: Metadata = {
   title: 'e-Arogyam — Pharmaceutical Cold-Chain & Inventory Management System, Gorakhpur',
@@ -15,7 +16,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-govt-gray text-govt-text font-sans">
-        <AuthProvider>{children}</AuthProvider>
+        <PreferencesProvider>
+          <AuthProvider>{children}</AuthProvider>
+        </PreferencesProvider>
       </body>
     </html>
   );

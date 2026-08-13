@@ -347,24 +347,24 @@ exports.apiRouter.get('/dashboard/overview', (req, res) => {
     const spoiledBatches = activeBreaches;
     const expiredBatches = db_1.inMemoryStore.batches.filter(b => b.status === 'EXPIRED').length;
     const criticalStockouts = db_1.inMemoryStore.batches.filter(b => b.quantity < 100).length;
-    let expiring30Days = 0;
     let expiring60Days = 0;
     let expiring90Days = 0;
+    let expiring120Days = 0;
     db_1.inMemoryStore.batches.forEach(b => {
         const days = (0, utils_1.calculateDaysToExpiry)(b.expiryDate);
-        if (days <= 30 && days > 0)
-            expiring30Days++;
-        else if (days <= 60 && days > 30)
+        if (days <= 60 && days > 0)
             expiring60Days++;
         else if (days <= 90 && days > 60)
             expiring90Days++;
+        else if (days <= 120 && days > 90)
+            expiring120Days++;
     });
     return successResponse(res, {
         totalInventory,
         criticalStockouts,
-        expiring30Days,
         expiring60Days,
         expiring90Days,
+        expiring120Days,
         activeBreaches,
         spoiledBatches,
         expiredBatches

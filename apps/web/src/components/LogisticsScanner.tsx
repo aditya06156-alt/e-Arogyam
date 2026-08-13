@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Camera, QrCode, ArrowDownRight, ArrowUpRight, Wifi, WifiOff, RefreshCw, CheckCircle2, AlertCircle, Package, X, Video } from 'lucide-react';
+import { Camera, QrCode, ArrowDownRight, ArrowUpRight, Wifi, WifiOff, RefreshCw, CheckCircle2, AlertCircle, Package, X, Video, Sparkles } from 'lucide-react';
 import { parseGS1Barcode } from '@/lib/utils';
 import { Batch, Facility } from '@/lib/types';
+import { usePreferences } from '@/lib/PreferencesContext';
 
 interface LogisticsScannerProps {
   apiBase: string;
@@ -18,6 +19,8 @@ export const LogisticsScanner: React.FC<LogisticsScannerProps> = ({
   facilities,
   onTransactionComplete
 }) => {
+  const { t } = usePreferences();
+
   const [scannedRaw, setScannedRaw] = useState('');
   const [parsedData, setParsedData] = useState<any>(null);
   const [selectedBatchId, setSelectedBatchId] = useState<string>('');
@@ -33,12 +36,13 @@ export const LogisticsScanner: React.FC<LogisticsScannerProps> = ({
   const [cameraError, setCameraError] = useState<string | null>(null);
   const html5QrcodeRef = useRef<any>(null);
 
-  // Sample GS1 Barcodes for quick manual testing
+  // 5 Realistic Sample GS1 Barcodes & QR codes for Demo
   const sampleBarcodes = [
-    { label: 'JE Vaccine (BRD Medical)', code: '(01)08901234567890(10)JE-BRD-001(17)270610' },
-    { label: 'Covaxin (BRD Medical)', code: '(01)08901234567890(10)COV-BRD-003(17)260828' },
-    { label: 'Insulin (AIIMS Gorakhpur)', code: '(01)08901234567892(10)INS-AIIMS-007(17)270110' },
-    { label: 'TB Combo (NSCB Hospital)', code: '(01)08901234567893(10)TB-NSCB-011(17)270801' }
+    { label: 'JE Vaccine (BRD Medical)', code: '(01)08901234567890(10)JE-BRD-001(17)270610', med: 'Japanese Encephalitis', batch: 'JE-BRD-001' },
+    { label: 'Covaxin (BRD Medical)', code: '(01)08901234567890(10)COV-BRD-003(17)260828', med: 'Covaxin COVID-19', batch: 'COV-BRD-003' },
+    { label: 'Insulin (AIIMS Gorakhpur)', code: '(01)08901234567892(10)INS-AIIMS-007(17)270110', med: 'Human Recombinant Insulin', batch: 'INS-AIIMS-007' },
+    { label: 'TB Combo (NSCB Hospital)', code: '(01)08901234567893(10)TB-NSCB-011(17)270801', med: 'Rifampicin + Isoniazid', batch: 'TB-NSCB-011' },
+    { label: 'Covaxin Low Stock (NSCB)', code: '(01)08901234567890(10)COV-NSCB-012(17)261101', med: 'Covaxin (Low Stock)', batch: 'COV-NSCB-012' }
   ];
 
   useEffect(() => {
@@ -52,7 +56,7 @@ export const LogisticsScanner: React.FC<LogisticsScannerProps> = ({
     localStorage.setItem('earogyam_offline_queue', JSON.stringify(offlineQueue));
   }, [offlineQueue]);
 
-  // Handle barcode string change
+  // Handle barcode string change and auto-fill details
   const handleBarcodeChange = (raw: string) => {
     setScannedRaw(raw);
     setStatusMessage(null);
@@ -64,14 +68,25 @@ export const LogisticsScanner: React.FC<LogisticsScannerProps> = ({
     const parsed = parseGS1Barcode(raw);
     setParsedData(parsed);
 
-    const matched = batches.find(b =>
-      b.batchNumber.toLowerCase() === (parsed.batchNumber || '').toLowerCase() ||
-      b.id === parsed.batchNumber
-    );
+    // Robust matching by batchNumber or id or substring
+    const matched = batches.find(b => {
+      const bNum = b.batchNumber.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const parsedNum = (parsed.batchNumber || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      const rawClean = raw.toLowerCase().replace(/[^a-z0-9]/g, '');
+      return (
+        (parsedNum && bNum.includes(parsedNum)) ||
+        (bNum && rawClean.includes(bNum)) ||
+        b.id.toLowerCase() === (parsed.batchNumber || '').toLowerCase()
+      );
+    });
 
     if (matched) {
       setSelectedBatchId(matched.id);
       setSelectedFacilityId(matched.currentFacilityId);
+      setStatusMessage({
+        type: 'success',
+        text: `✨ Auto-filled Batch ${matched.batchNumber} (${matched.medicine?.name || 'Medicine'}) from barcode.`
+      });
     }
   };
 
@@ -98,7 +113,7 @@ export const LogisticsScanner: React.FC<LogisticsScannerProps> = ({
         );
       } catch (err: any) {
         console.error('Camera Scanner Error:', err);
-        setCameraError(err.message || 'Camera permission denied or camera not found on device.');
+        setCameraError(err.message || 'Camera permission denied or camera device unavailable. You can use Quick Test buttons or paste GS1 barcode.');
       }
     }, 200);
   };
@@ -210,23 +225,25 @@ export const LogisticsScanner: React.FC<LogisticsScannerProps> = ({
     }
   };
 
+  const selectedBatch = batches.find(b => b.id === selectedBatchId);
+
   return (
-    <div className="bg-white border-2 border-govt-navy rounded-govt shadow-sm p-5 text-xs">
+    <div className="bg-white border-2 border-govt-navy rounded-govt shadow-sm p-4 sm:p-5 text-xs">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center pb-4 mb-5 border-b border-slate-200 gap-3">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 mb-5 border-b border-slate-200 gap-3">
         <div>
-          <h2 className="text-base font-bold text-govt-navy flex items-center gap-2">
-            <Camera className="w-5 h-5 text-blue-600" />
-            Logistics Barcode & Live Camera Scanner Portal
+          <h2 className="text-sm sm:text-base font-bold text-govt-navy flex items-center gap-2">
+            <Camera className="w-5 h-5 text-blue-600 shrink-0" />
+            {t('scanner_title')}
           </h2>
-          <p className="text-xs text-slate-500">
-            Scan GS1 DataMatrix / QR codes using device camera or manual input (Inward receipt & Outward hospital dispensing)
+          <p className="text-xs text-slate-500 mt-0.5">
+            {t('scanner_subtitle')}
           </p>
         </div>
 
         <button
           onClick={() => setIsOfflineMode(!isOfflineMode)}
-          className={`px-3 py-1.5 rounded font-bold flex items-center gap-2 border text-xs transition-colors ${
+          className={`px-3 py-1.5 rounded font-bold flex items-center gap-2 border text-xs transition-colors shrink-0 ${
             isOfflineMode
               ? 'bg-amber-100 text-amber-900 border-amber-400 hover:bg-amber-200'
               : 'bg-emerald-100 text-emerald-900 border-emerald-400 hover:bg-emerald-200'
@@ -235,12 +252,12 @@ export const LogisticsScanner: React.FC<LogisticsScannerProps> = ({
           {isOfflineMode ? (
             <>
               <WifiOff className="w-4 h-4 text-amber-700" />
-              <span>MODE: OFFLINE (LOCAL DEVICE QUEUE)</span>
+              <span>MODE: OFFLINE (LOCAL QUEUE)</span>
             </>
           ) : (
             <>
               <Wifi className="w-4 h-4 text-emerald-700" />
-              <span>MODE: ONLINE (DIRECT SERVER SYNC)</span>
+              <span>MODE: ONLINE (DIRECT SYNC)</span>
             </>
           )}
         </button>
@@ -253,7 +270,7 @@ export const LogisticsScanner: React.FC<LogisticsScannerProps> = ({
           <div>
             <div className="flex justify-between items-center mb-1.5">
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                GS1 DataMatrix / Barcode Input
+                {t('manual_input')}
               </label>
 
               {/* REAL CAMERA SCANNER BUTTON */}
@@ -263,14 +280,14 @@ export const LogisticsScanner: React.FC<LogisticsScannerProps> = ({
                 className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-2.5 py-1 rounded flex items-center gap-1 text-[11px] transition-colors"
               >
                 <Video className="w-3.5 h-3.5" />
-                <span>OPEN CAMERA SCANNER</span>
+                <span>{t('scan_with_camera')}</span>
               </button>
             </div>
 
             <div className="relative">
               <input
                 type="text"
-                placeholder="Scan with camera or type GS1 barcode string..."
+                placeholder="Scan with camera or paste GS1 barcode string..."
                 value={scannedRaw}
                 onChange={(e) => handleBarcodeChange(e.target.value)}
                 className="w-full p-2.5 pr-8 border border-govt-border rounded bg-slate-50 font-mono text-xs text-slate-900 focus:bg-white"
@@ -279,34 +296,42 @@ export const LogisticsScanner: React.FC<LogisticsScannerProps> = ({
             </div>
           </div>
 
-          {/* Quick Demo Barcode Buttons */}
+          {/* Quick Demo Barcode Buttons (Click to Auto-fill) */}
           <div>
-            <span className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-              Quick Test GS1 Barcodes:
-            </span>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="flex items-center gap-1 text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              <span>{t('quick_demo_qrs')}</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {sampleBarcodes.map((sample, idx) => (
                 <button
                   key={idx}
+                  type="button"
                   onClick={() => handleBarcodeChange(sample.code)}
-                  className="p-2 border border-slate-200 bg-slate-50 hover:bg-blue-50/80 rounded text-left transition-colors"
+                  className="p-2 border border-slate-200 bg-slate-50 hover:bg-blue-50/80 rounded text-left transition-colors cursor-pointer group"
                 >
-                  <span className="font-bold block text-slate-800 text-[11px]">{sample.label}</span>
-                  <span className="font-mono text-[10px] text-slate-500 truncate block">{sample.code}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="font-bold text-slate-800 text-[11px] group-hover:text-blue-700">{sample.label}</span>
+                    <span className="bg-blue-100 text-blue-800 text-[9px] px-1 py-0.2 rounded font-mono font-bold">AUTO-FILL</span>
+                  </div>
+                  <span className="text-[10px] text-slate-500 block mt-0.5">{sample.med}</span>
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Parsed Data Preview */}
-          {parsedData && (
-            <div className="bg-blue-50/60 border border-blue-200 p-3 rounded space-y-1">
-              <span className="font-bold text-govt-navy block text-xs">Parsed GS1 Barcode Data:</span>
-              <div className="grid grid-cols-2 gap-2 text-[11px]">
-                <div><span className="text-slate-500">Matched Batch:</span> <strong className="text-slate-900">{parsedData.batchNumber || 'N/A'}</strong></div>
-                <div><span className="text-slate-500">GTIN/SKU:</span> <strong className="text-slate-900">{parsedData.gtin || 'N/A'}</strong></div>
-                <div><span className="text-slate-500">Expiry Date:</span> <strong className="text-slate-900">{parsedData.expiryDate || 'N/A'}</strong></div>
-                <div><span className="text-slate-500">Serial No:</span> <strong className="text-slate-900">{parsedData.serialNumber || 'N/A'}</strong></div>
+          {/* Auto-filled details summary card */}
+          {selectedBatch && (
+            <div className="bg-emerald-50 border border-emerald-200 p-3 rounded space-y-1.5">
+              <div className="flex items-center gap-1.5 text-emerald-900 font-bold text-xs">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <span>Verified Medicine Details Auto-Filled:</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-[11px] bg-white p-2.5 rounded border border-emerald-100">
+                <div><span className="text-slate-500">{t('batch_no')}:</span> <strong className="text-slate-900 block font-mono">{selectedBatch.batchNumber}</strong></div>
+                <div><span className="text-slate-500">{t('medicine_name')}:</span> <strong className="text-slate-900 block truncate">{selectedBatch.medicine?.name}</strong></div>
+                <div><span className="text-slate-500">{t('exp_date')}:</span> <strong className="text-slate-900 block font-mono">{selectedBatch.expiryDate}</strong></div>
+                <div><span className="text-slate-500">{t('curr_qty')}:</span> <strong className="text-slate-900 block">{selectedBatch.quantity} units ({selectedBatch.status})</strong></div>
               </div>
             </div>
           )}
@@ -319,7 +344,7 @@ export const LogisticsScanner: React.FC<LogisticsScannerProps> = ({
 
             <div className="space-y-3">
               <div>
-                <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">Target Batch</label>
+                <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">{t('select_batch')}</label>
                 <select
                   value={selectedBatchId}
                   onChange={(e) => {
@@ -364,21 +389,23 @@ export const LogisticsScanner: React.FC<LogisticsScannerProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 pt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             <button
+              type="button"
               onClick={() => handleLogTransaction('INWARD')}
-              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2.5 px-3 rounded flex items-center justify-center gap-1.5 transition-colors shadow-sm"
+              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2.5 px-3 rounded flex items-center justify-center gap-1.5 transition-colors shadow-sm cursor-pointer"
             >
               <ArrowDownRight className="w-4 h-4" />
-              INWARD (+{quantity})
+              <span>{t('confirm_inward')} (+{quantity})</span>
             </button>
 
             <button
+              type="button"
               onClick={() => handleLogTransaction('OUTWARD')}
-              className="bg-govt-navy hover:bg-govt-blue text-white font-bold py-2.5 px-3 rounded flex items-center justify-center gap-1.5 transition-colors shadow-sm"
+              className="bg-govt-navy hover:bg-govt-blue text-white font-bold py-2.5 px-3 rounded flex items-center justify-center gap-1.5 transition-colors shadow-sm cursor-pointer"
             >
               <ArrowUpRight className="w-4 h-4" />
-              OUTWARD (-{quantity})
+              <span>{t('confirm_outward')} (-{quantity})</span>
             </button>
           </div>
         </div>
@@ -456,7 +483,7 @@ export const LogisticsScanner: React.FC<LogisticsScannerProps> = ({
             {cameraError ? (
               <div className="bg-red-950 border border-red-800 p-4 rounded text-red-200 text-xs">
                 <AlertCircle className="w-5 h-5 text-red-400 mb-2" />
-                <p className="font-bold">Camera Access Error:</p>
+                <p className="font-bold">Camera Access Notice:</p>
                 <p className="mt-1">{cameraError}</p>
                 <button
                   onClick={stopCameraScanner}
