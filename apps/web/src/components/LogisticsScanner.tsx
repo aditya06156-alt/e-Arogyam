@@ -5,6 +5,7 @@ import { Camera, QrCode, ArrowDownRight, ArrowUpRight, Wifi, WifiOff, RefreshCw,
 import { parseGS1Barcode } from '@/lib/utils';
 import { Batch, Facility } from '@/lib/types';
 import { usePreferences } from '@/lib/PreferencesContext';
+import { Html5Qrcode } from 'html5-qrcode';
 
 interface LogisticsScannerProps {
   apiBase: string;
@@ -90,7 +91,7 @@ export const LogisticsScanner: React.FC<LogisticsScannerProps> = ({
     }
   };
 
-  // Start Real Camera Scanner via html5-qrcode
+  // Start Real Camera Scanner via static Html5Qrcode (offline cached)
   const startCameraScanner = async () => {
     setIsCameraActive(true);
     setCameraError(null);
@@ -98,7 +99,6 @@ export const LogisticsScanner: React.FC<LogisticsScannerProps> = ({
     // Wait for DOM element rendering
     setTimeout(async () => {
       try {
-        const { Html5Qrcode } = await import('html5-qrcode');
         const qrScanner = new Html5Qrcode('camera-reader');
         html5QrcodeRef.current = qrScanner;
 
